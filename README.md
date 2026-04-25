@@ -1,27 +1,27 @@
-# Superpowers
+# mormot2-superpowers
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+A Pascal/Delphi+FPC variant of [Superpowers](https://github.com/obra/superpowers) (Jesse Vincent / Prime Radiant), specialized for the [Synopse mORMot 2](https://github.com/synopse/mORMot2) framework.
 
-## How it works
+This plugin keeps the upstream methodology layer (brainstorming, planning, TDD, subagent-driven development, code review) and adds:
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+- A mORMot 2 domain layer covering ORM, REST/SOA, networking, database, deployment, and security.
+- Pascal-aware build skills for Delphi (dcc32/dcc64, MSBuild) and FPC/Lazarus (fpc, lazbuild).
+- TSynTestCase-first test discipline (no DUnitX/FPCUnit fallback).
+- A `/mormot2-doc` lookup that resolves chapters of the local mORMot 2 SAD documentation tree.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+## Prerequisites
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+- A working mORMot 2 install (clone of https://github.com/synopse/mORMot2).
+- Either Delphi (RAD Studio) or Free Pascal Compiler 3.2+ on PATH.
+- Bash (Git Bash on Windows) for hook execution.
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for Claude to be able to work autonomously for a couple hours at a time without deviating from the plan you put together.
+## Configuration
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+Each project that uses this plugin needs `.claude/mormot2.config.json`. Run `/mormot2-init` to scaffold one, or copy `mormot2.config.example.json` from the plugin root.
 
+## Upstream credit
 
-## Sponsorship
-
-If Superpowers has helped you do stuff that makes money and you are so inclined, I'd greatly appreciate it if you'd consider [sponsoring my opensource work](https://github.com/sponsors/obra).
-
-Thanks! 
-
-- Jesse
+This plugin is a fork of `obra/superpowers` v5.0.7. The methodology and most of the process skills are upstream's work; see `NOTICE` for full attribution. Distributed under MIT, the same license as upstream.
 
 
 ## Installation
