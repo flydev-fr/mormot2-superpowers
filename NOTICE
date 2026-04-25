@@ -1,0 +1,19 @@
+mormot2-superpowers
+===================
+
+This project is a fork of "Superpowers" by Jesse Vincent and Prime Radiant
+(https://github.com/obra/superpowers), distributed under the MIT License.
+The original project's process skills, hooks, and orchestration patterns
+are retained largely unchanged and remain the work of the original
+authors.
+
+The mORMot 2 domain layer (skills under `skills/mormot2-*/`, build scripts,
+the `/mormot2-*` slash commands, the Pascal-aware `code-reviewer` agent,
+and the `mormot2.config.json` schema) is original work added in this fork
+and is also distributed under the MIT License.
+
+The Synopse mORMot 2 framework (https://github.com/synopse/mORMot2) by
+Arnaud Bouchez is referenced by name and by file path only. No mORMot 2
+source code or documentation is bundled in this plugin. mORMot 2 is
+tri-licensed under MPL 1.1 / GPL 2.0 / LGPL 2.1 and remains the property
+of its authors.
