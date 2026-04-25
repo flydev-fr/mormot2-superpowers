@@ -57,5 +57,36 @@ teardown() {
     MORMOT2_DOC_PATH="$FAKE_DOCS" run "$SCRIPT" torm
     [ "$status" -eq 0 ]
     line_count=$(printf '%s\n' "$output" | wc -l)
-    [ "$line_count" -le 202 ]    # 200 + header + path
+    # 1 header line + up to 200 body lines = 201
+    [ "$line_count" -le 201 ]
+}
+
+@test "respects custom line limit" {
+    yes line | head -n 500 >> "${FAKE_DOCS}/mORMot2-SAD-Chapter-05.md"
+    MORMOT2_DOC_PATH="$FAKE_DOCS" run "$SCRIPT" torm 5
+    [ "$status" -eq 0 ]
+    line_count=$(printf '%s\n' "$output" | wc -l)
+    # 1 header + 5 body = 6
+    [ "$line_count" -le 6 ]
+}
+
+@test "exits 1 on non-numeric limit" {
+    MORMOT2_DOC_PATH="$FAKE_DOCS" run "$SCRIPT" torm abc
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"line-limit must be a positive integer"* ]]
+}
+
+@test "exits 1 on zero limit" {
+    MORMOT2_DOC_PATH="$FAKE_DOCS" run "$SCRIPT" torm 0
+    [ "$status" -eq 1 ]
+}
+
+@test "exits 2 with clear message when chapter-index file missing" {
+    INDEX="${PLUGIN_ROOT}/references/chapter-index.json"
+    BACKUP="${INDEX}.bak"
+    mv "$INDEX" "$BACKUP"
+    MORMOT2_DOC_PATH="$FAKE_DOCS" run "$SCRIPT" torm
+    mv "$BACKUP" "$INDEX"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"chapter-index lookup failed"* ]]
 }

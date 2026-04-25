@@ -21,6 +21,11 @@ fi
 QUERY="$1"
 LIMIT="${2:-200}"
 
+if ! [[ "$LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "error: line-limit must be a positive integer, got '$LIMIT'" >&2
+    exit 1
+fi
+
 if [ -z "${MORMOT2_DOC_PATH:-}" ]; then
     echo "error: MORMOT2_DOC_PATH is not set; run /mormot2-init or set it manually" >&2
     exit 2
@@ -48,16 +53,23 @@ if [[ "$QUERY" =~ ^[0-9]+$ ]]; then
 else
     # Lower-case the topic and look it up in the index via node (already a dep
     # via package.json/main).
+    set +e
     CHAPTER=$(NODE_INDEX="$NODE_INDEX" node -e "
         const idx = JSON.parse(require('fs').readFileSync(process.env.NODE_INDEX,'utf8'));
         const k = process.argv[1].toLowerCase();
         const v = idx.topics[k];
         if (v === undefined) { process.exit(4); }
         process.stdout.write(String(v).padStart(2,'0'));
-    " "$QUERY") || {
+    " "$QUERY")
+    NODE_EXIT=$?
+    set -e
+    if [ "$NODE_EXIT" -eq 4 ]; then
         echo "error: unknown topic '$QUERY'" >&2
         exit 4
-    }
+    elif [ "$NODE_EXIT" -ne 0 ]; then
+        echo "error: chapter-index lookup failed (node exit $NODE_EXIT); check $INDEX exists and node is on PATH" >&2
+        exit 2
+    fi
 fi
 
 FILE="${MORMOT2_DOC_PATH}/mORMot2-SAD-Chapter-${CHAPTER}.md"
