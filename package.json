@@ -1,6 +1,12 @@
 {
-  "name": "superpowers",
-  "version": "5.0.7",
+  "name": "mormot2-superpowers",
+  "version": "0.1.0",
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js"
+  "main": ".opencode/plugins/superpowers.js",
+  "description": "Pascal/Delphi+FPC variant of the Superpowers plugin, specialized for the Synopse mORMot 2 framework.",
+  "license": "MIT",
+  "fork": {
+    "of": "obra/superpowers",
+    "from_version": "5.0.7"
+  }
 }
