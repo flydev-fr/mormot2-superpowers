@@ -34,6 +34,52 @@ using_superpowers_escaped=$(escape_for_json "$using_superpowers_content")
 warning_escaped=$(escape_for_json "$warning_message")
 session_context="<EXTREMELY_IMPORTANT>\nYou have superpowers.\n\n**Below is the full content of your 'superpowers:using-superpowers' skill - your introduction to using skills. For all other skills, use the 'Skill' tool:**\n\n${using_superpowers_escaped}\n\n${warning_escaped}\n</EXTREMELY_IMPORTANT>"
 
+# --- mormot2-superpowers: config + Pascal detection ----------------------
+# Defensive — never abort the session on config issues.
+mormot2_block=""
+config_path=".claude/mormot2.config.json"
+if [ -f "$config_path" ]; then
+    if mormot2_path=$(node -e "
+        try {
+            const c = JSON.parse(require('fs').readFileSync('$config_path','utf8'));
+            if (c.mormot2_path) process.stdout.write(c.mormot2_path);
+        } catch (e) { process.exit(1); }
+    " 2>/dev/null); then
+        if [ -n "$mormot2_path" ]; then
+            export MORMOT2_PATH="$mormot2_path"
+        fi
+    fi
+    if mormot2_doc=$(node -e "
+        try {
+            const c = JSON.parse(require('fs').readFileSync('$config_path','utf8'));
+            const p = c.mormot2_doc_path || (c.mormot2_path ? c.mormot2_path + '/docs' : '');
+            if (p) process.stdout.write(p);
+        } catch (e) { process.exit(1); }
+    " 2>/dev/null); then
+        if [ -n "$mormot2_doc" ]; then
+            export MORMOT2_DOC_PATH="$mormot2_doc"
+        fi
+    fi
+fi
+
+# Detect Pascal context: any .dpr/.dproj/.lpi/.lpr/.pas in cwd or one level deep
+if compgen -G "*.dpr" > /dev/null 2>&1 \
+   || compgen -G "*.dproj" > /dev/null 2>&1 \
+   || compgen -G "*.lpi" > /dev/null 2>&1 \
+   || compgen -G "*.lpr" > /dev/null 2>&1 \
+   || compgen -G "*.pas" > /dev/null 2>&1 \
+   || compgen -G "*/*.dpr" > /dev/null 2>&1 \
+   || compgen -G "*/*.lpi" > /dev/null 2>&1 \
+   || compgen -G "*/*.pas" > /dev/null 2>&1; then
+    export PASCAL_PROJECT=1
+    if [ ! -f "$config_path" ]; then
+        mormot2_block="\n\n<important-reminder>Pascal project detected but .claude/mormot2.config.json is missing. Run /mormot2-init to scaffold one, or copy mormot2.config.example.json from the plugin root.</important-reminder>"
+    fi
+fi
+mormot2_block_escaped=$(escape_for_json "$mormot2_block")
+session_context="${session_context}${mormot2_block_escaped}"
+# --- end mormot2-superpowers block ---------------------------------------
+
 # Output context injection as JSON.
 # Cursor hooks expect additional_context (snake_case).
 # Claude Code hooks expect hookSpecificOutput.additionalContext (nested).
