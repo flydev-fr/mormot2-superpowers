@@ -1,6 +1,6 @@
 ---
 name: mormot2-auth-security
-description: Use when working with mORMot 2 cryptography and authentication primitives: JWT, ECC (secp256r1), AES-GCM, SHA-256/512, password hashing, session token generation, signing/verifying. Do NOT use for REST session lifecycle (use mormot2-rest-soa) or TLS/ACME (use mormot2-net).
+description: Use when working with mORMot 2 crypto/auth primitives: JWT, ECC, AES-GCM, SHA, password hashing, signing. Do NOT use for REST session lifecycle (use mormot2-rest-soa) or TLS/ACME (use mormot2-net).
 ---
 
 # mormot2-auth-security
