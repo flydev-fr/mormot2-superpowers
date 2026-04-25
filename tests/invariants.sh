@@ -124,6 +124,78 @@ else
     report "I8 session-start missing mormot2 block"
 fi
 
+# I9: every domain skill has SKILL.md with valid frontmatter
+#     (name matches dir, description present and <= 200 chars).
+DOMAIN_SKILLS=(mormot2-core mormot2-orm mormot2-rest-soa mormot2-net mormot2-db mormot2-deploy mormot2-auth-security delphi-build fpc-build pascal-debugging-logging)
+violations_9=0
+for s in "${DOMAIN_SKILLS[@]}"; do
+    sk="skills/$s/SKILL.md"
+    if [ ! -f "$sk" ]; then
+        report "I9 missing $sk"
+        violations_9=$((violations_9+1))
+        continue
+    fi
+    name=$(awk '/^---$/{c++; next} c==1 && /^name:/{print $2; exit}' "$sk")
+    desc=$(awk '/^---$/{c++; next} c==1 && /^description:/{sub(/^description: */, ""); print; exit}' "$sk")
+    if [ "$name" != "$s" ]; then
+        report "I9 $sk: frontmatter name='$name' does not match dir '$s'"
+        violations_9=$((violations_9+1))
+    fi
+    if [ ${#desc} -eq 0 ]; then
+        report "I9 $sk: missing description"
+        violations_9=$((violations_9+1))
+    elif [ ${#desc} -gt 200 ]; then
+        report "I9 $sk: description ${#desc} chars > 200"
+        violations_9=$((violations_9+1))
+    fi
+done
+[ $violations_9 -eq 0 ] && ok "I9 domain skill frontmatter"
+
+# I10: every domain skill description ends with 'Do NOT use for' clause.
+violations_10=0
+for s in "${DOMAIN_SKILLS[@]}"; do
+    sk="skills/$s/SKILL.md"
+    [ -f "$sk" ] || continue
+    desc=$(awk '/^---$/{c++; next} c==1 && /^description:/{sub(/^description: */, ""); print; exit}' "$sk")
+    if ! grep -qi 'Do NOT use for' <<<"$desc"; then
+        report "I10 $sk: description lacks 'Do NOT use for' clause"
+        violations_10=$((violations_10+1))
+    fi
+done
+[ $violations_10 -eq 0 ] && ok "I10 domain skill scope clauses"
+
+# I11: every domain skill has non-empty references/ and an eval.md.
+violations_11=0
+for s in "${DOMAIN_SKILLS[@]}"; do
+    refs="skills/$s/references"
+    eval_file="skills/$s/eval.md"
+    if [ ! -d "$refs" ]; then
+        report "I11 missing $refs"
+        violations_11=$((violations_11+1))
+    else
+        ref_count=$(find "$refs" -type f -name '*.md' 2>/dev/null | wc -l)
+        if [ "$ref_count" -lt 1 ]; then
+            report "I11 $refs: needs at least 1 reference file"
+            violations_11=$((violations_11+1))
+        fi
+    fi
+    if [ ! -f "$eval_file" ]; then
+        report "I11 missing $eval_file"
+        violations_11=$((violations_11+1))
+    fi
+done
+[ $violations_11 -eq 0 ] && ok "I11 domain skill references and eval"
+
+# I12: no skill SKILL.md or reference contains hard-coded Windows absolute paths.
+violations_12=0
+for s in "${DOMAIN_SKILLS[@]}"; do
+    if grep -nE 'C:\\|C:/Users/' "skills/$s/SKILL.md" "skills/$s/references/"*.md 2>/dev/null; then
+        report "I12 hard-coded Windows path in skills/$s/"
+        violations_12=$((violations_12+1))
+    fi
+done
+[ $violations_12 -eq 0 ] && ok "I12 no hard-coded Windows paths in domain skills"
+
 echo
 if [ $fails -eq 0 ]; then
     echo "ALL INVARIANTS PASS"

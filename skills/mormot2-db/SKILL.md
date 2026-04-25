@@ -1,6 +1,6 @@
 ---
 name: mormot2-db
-description: Use when working with raw SQL providers (TSqlDBConnection, TSqlDBStatement), choosing/configuring database engines (SQLite, PostgreSQL, MSSQL, Oracle, MongoDB, ZEOS, ODBC), thread-safe connection pooling, or BSON/Mongo data shapes. Do NOT use for ORM (use mormot2-orm) or REST (use mormot2-rest-soa).
+description: Use for raw SQL via TSqlDB* providers, picking DB engines (SQLite, PostgreSQL, MSSQL, Oracle, Mongo, ZEOS, ODBC), pooling, BSON. Do NOT use for ORM (mormot2-orm) or REST (mormot2-rest-soa).
 ---
 
 # mormot2-db

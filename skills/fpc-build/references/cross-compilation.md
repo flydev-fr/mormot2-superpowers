@@ -45,15 +45,15 @@ FPC ships per-host installers, not per-target. To cross-compile, you need:
 2. The cross-binutils for the **target**: `<target>-as` and `<target>-ld` (and on Linux targets, `<target>-objcopy`, `<target>-strip`).
 3. Optionally, the FPC RTL `.ppu` files for the target, pre-built and dropped under `$FPCDIR/units/<target>-<cpu>/`.
 
-On Windows, the canonical layout is:
+On Windows, the canonical layout (under any FPC install root, e.g. `%FPCUP_ROOT%\fpc\`) is:
 
 ```
-C:\fpcup\fpc\
-  bin\
-    x86_64-win64\         # host compiler
+$FPCDIR/
+  bin/
+    x86_64-win64/         # host compiler
       fpc.exe
       ppcx64.exe
-    arm-linux\            # cross binutils for ARM Linux
+    arm-linux/            # cross binutils for ARM Linux
       arm-linux-as.exe
       arm-linux-ld.exe
       arm-linux-strip.exe

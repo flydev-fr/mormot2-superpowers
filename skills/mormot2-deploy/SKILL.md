@@ -1,6 +1,6 @@
 ---
 name: mormot2-deploy
-description: Use when configuring deployment topology for mORMot 2 servers: bundling static libraries (SQLite, OpenSSL, Zstd, libgss), running as Windows service or systemd daemon, choosing a reverse proxy (nginx, IIS, HAProxy), and wiring TLS at the proxy or app layer. Do NOT use for in-process TLS/ACME (use mormot2-net) or build-time compiler flags (use delphi-build / fpc-build).
+description: Use for deployment: static libs (SQLite, OpenSSL, Zstd), Windows service / systemd, fronting with nginx / HAProxy. Do NOT use for in-process TLS (mormot2-net) or compiler flags (use *-build skills).
 ---
 
 # mormot2-deploy
