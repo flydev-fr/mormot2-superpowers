@@ -1,6 +1,10 @@
 {
   "name": "mormot2-superpowers-dev",
   "description": "Development marketplace for the mormot2-superpowers plugin (Pascal/Delphi+FPC + Synopse mORMot 2 methodology fork of obra/superpowers).",
+  "owner": {
+    "name": "mormot2-superpowers maintainer",
+    "email": "thelogshownothing@gmail.com"
+  },
   "plugins": [
     {
       "name": "mormot2-superpowers",
