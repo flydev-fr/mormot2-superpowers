@@ -196,6 +196,52 @@ for s in "${DOMAIN_SKILLS[@]}"; do
 done
 [ $violations_12 -eq 0 ] && ok "I12 no hard-coded Windows paths in domain skills"
 
+# I13: every Tier 1 skill that received an addendum (per Plan 3) contains
+#      the gating sentinel and the Pascal/mORMot2 Addendum heading.
+ADDENDUM_SKILLS=(test-driven-development systematic-debugging verification-before-completion writing-plans using-git-worktrees requesting-code-review finishing-a-development-branch)
+violations_13=0
+for s in "${ADDENDUM_SKILLS[@]}"; do
+    sk="skills/$s/SKILL.md"
+    if [ ! -f "$sk" ]; then
+        report "I13 missing $sk"
+        violations_13=$((violations_13+1))
+        continue
+    fi
+    if ! grep -q '## Pascal / mORMot2 Addendum' "$sk"; then
+        report "I13 $sk lacks '## Pascal / mORMot2 Addendum' heading"
+        violations_13=$((violations_13+1))
+    fi
+    if ! grep -q 'PASCAL_PROJECT=1' "$sk"; then
+        report "I13 $sk lacks 'PASCAL_PROJECT=1' gating sentinel"
+        violations_13=$((violations_13+1))
+    fi
+done
+[ $violations_13 -eq 0 ] && ok "I13 Tier 1 addenda gating"
+
+# I14: every /mormot2-* and /delphi-build / /fpc-build command file exists
+#      with frontmatter containing 'description'.
+COMMAND_FILES=(commands/mormot2-init.md commands/delphi-build.md commands/fpc-build.md commands/mormot2-test.md commands/mormot2-doc.md)
+violations_14=0
+for c in "${COMMAND_FILES[@]}"; do
+    if [ ! -f "$c" ]; then
+        report "I14 missing $c"
+        violations_14=$((violations_14+1))
+        continue
+    fi
+    if ! awk '/^---$/{c++; next} c==1 && /^description:/{found=1; exit} END{exit !found}' "$c"; then
+        report "I14 $c lacks 'description:' frontmatter"
+        violations_14=$((violations_14+1))
+    fi
+done
+[ $violations_14 -eq 0 ] && ok "I14 commands present and well-formed"
+
+# I15: agents/code-reviewer.md contains the Pascal-aware checklist sentinel.
+if [ -f agents/code-reviewer.md ] && grep -q 'Pascal/mORMot 2 specific checklist' agents/code-reviewer.md; then
+    ok "I15 code-reviewer agent contains Pascal checklist"
+else
+    report "I15 agents/code-reviewer.md missing Pascal checklist"
+fi
+
 echo
 if [ $fails -eq 0 ]; then
     echo "ALL INVARIANTS PASS"
