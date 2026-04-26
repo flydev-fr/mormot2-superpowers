@@ -103,3 +103,27 @@ You: [Fix progress indicators]
 - Request clarification
 
 See template at: requesting-code-review/code-reviewer.md
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+Dispatch the Pascal-aware `code-reviewer` agent (in `agents/code-reviewer.md`) - its checklist already covers the items below. When constructing the review request, give the agent:
+
+- The diff range (e.g. `git diff plan-02-domain-skills-complete..HEAD`).
+- The plan task or design section the change implements.
+- The BUILD_RESULT lines from `/delphi-build` and/or `/fpc-build`.
+- The `/mormot2-test` exit status.
+
+### Pascal review checklist (what the agent will check)
+
+- **String types:** `RawUtf8` for storage/transport, `string` only at UI/RTL boundary, `RawByteString` for binary, `UnicodeString` for VCL - see `mormot2-core`.
+- **Interface lifetime:** every `IInvokable` / `IFoo` declared interface has a `[GUID]` literal, and reference-counted lifetime is respected (no `as TObject` on an interface unless the source backs it).
+- **try-finally completeness:** every `Create`/`Init`/`Open` has a matching `Free`/`Done`/`Close` in a `try`/`finally` (or the resource is interface-typed and self-managed).
+- **`Free` vs `FreeAndNil`:** `FreeAndNil` for fields that may be re-checked; `Free` is acceptable for locals about to leave scope.
+- **Threading on `TSqlDBConnection`:** each thread owns its connection; no shared connection across threads. See `mormot2-db/references/thread-safety.md`.
+- **ORM reflexes:** no `string` fields on `TOrm` descendants, no `TOrm.ID` self-set, every `published` matters.
+- **Build symbols deployed:** `.map` (Delphi) or DWARF (FPC) accompanies the binary.
+- **No em dashes** in commit messages or docs (per global rule).
