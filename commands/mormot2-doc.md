@@ -12,9 +12,12 @@ Look up a topic or chapter number in the mORMot 2 Software Architecture Design (
 
 ## What you do
 
-1. Run `bash "$CLAUDE_PLUGIN_ROOT/scripts/sad-lookup.sh" <args>` (or `pwsh -File "$CLAUDE_PLUGIN_ROOT/scripts/sad-lookup.ps1" <args>` on Windows). The plugin root is exported as `CLAUDE_PLUGIN_ROOT` by Claude Code; do NOT use a relative path like `scripts/sad-lookup.sh` because the slash command runs from the user's project cwd, not the plugin root.
-2. The script resolves topic via the chapter index, validates the file exists at `$MORMOT2_DOC_PATH/mORMot2-SAD-Chapter-NN.md`, and emits `Chapter NN - <path>` followed by the excerpt.
-3. Quote the excerpt verbatim back to the user.
+1. Resolve the script path. The plugin scripts live inside the installed plugin directory, NOT the user's cwd. Try in this order:
+   1. Use `$CLAUDE_PLUGIN_ROOT` if it expands to a non-empty path inside the bash subshell.
+   2. If `$CLAUDE_PLUGIN_ROOT` is empty (some Claude Code builds do not propagate it to slash-command Bash invocations), glob for the script under the user's plugin cache: `~/.claude/plugins/cache/mormot2-superpowers-dev/mormot2-superpowers/*/scripts/sad-lookup.sh` (latest version wins). On Windows this resolves to `C:/Users/<user>/.claude/plugins/cache/mormot2-superpowers-dev/mormot2-superpowers/<version>/scripts/sad-lookup.sh`.
+2. Invoke `bash "<resolved-path>/sad-lookup.sh" <args>` (or `pwsh -File "<resolved-path>/sad-lookup.ps1" <args>` on Windows-native).
+3. The script reads `$MORMOT2_DOC_PATH` (set by the session-start hook from `.claude/mormot2.config.json`), validates the chapter file exists, and emits `Chapter NN - <path>` followed by the excerpt.
+4. Quote the excerpt verbatim back to the user.
 
 ## Topics
 

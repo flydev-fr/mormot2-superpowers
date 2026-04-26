@@ -16,7 +16,7 @@ Invoke the plugin's `scripts/delphi-build.ps1` (resolve via `$CLAUDE_PLUGIN_ROOT
 ## What you do
 
 1. Resolve the project file (argument or autodiscover).
-2. Run `pwsh -File "$CLAUDE_PLUGIN_ROOT/scripts/delphi-build.ps1" -Project <project> [-Compiler <comp>]`.
+2. Resolve the script path. Prefer `$CLAUDE_PLUGIN_ROOT/scripts/delphi-build.ps1`; if `$CLAUDE_PLUGIN_ROOT` is empty in the subshell, glob `~/.claude/plugins/cache/mormot2-superpowers-dev/mormot2-superpowers/*/scripts/delphi-build.ps1` (latest version wins). Then run `pwsh -File "<resolved-path>" -Project <project> [-Compiler <comp>]`.
 3. Read the trailing `BUILD_RESULT` line.
 4. If `exit != 0` or `errors > 0`, surface the `first` field and the BUILD_RESULT verbatim.
 5. If `exit = 0`, report success with the warnings count.

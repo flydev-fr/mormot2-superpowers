@@ -16,7 +16,7 @@ Invoke the plugin's `scripts/fpc-build.sh` (resolve via `$CLAUDE_PLUGIN_ROOT`, n
 ## What you do
 
 1. Resolve the project file (argument or autodiscover).
-2. Run `bash "$CLAUDE_PLUGIN_ROOT/scripts/fpc-build.sh" --project <project>` (or `--lpi <file>`).
+2. Resolve the script path. Prefer `$CLAUDE_PLUGIN_ROOT/scripts/fpc-build.sh`; if `$CLAUDE_PLUGIN_ROOT` is empty in the subshell, glob `~/.claude/plugins/cache/mormot2-superpowers-dev/mormot2-superpowers/*/scripts/fpc-build.sh` (latest version wins). Then run `bash "<resolved-path>" --project <project>` (or `--lpi <file>`).
 3. Read the trailing `BUILD_RESULT` line.
 4. If `exit != 0` or `errors > 0`, surface the `first` field and the BUILD_RESULT verbatim.
 5. If `exit = 0`, report success with the warnings count.
