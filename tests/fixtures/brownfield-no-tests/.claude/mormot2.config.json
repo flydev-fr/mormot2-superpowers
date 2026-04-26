@@ -1,0 +1,5 @@
+{
+  "mormot2_path": "REPLACE_WITH_MORMOT2_PATH",
+  "mormot2_doc_path": "REPLACE_WITH_MORMOT2_PATH/docs",
+  "compiler": "auto"
+}
