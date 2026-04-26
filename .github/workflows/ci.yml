@@ -1,0 +1,165 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  invariants:
+    name: invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run invariants
+        run: bash tests/invariants.sh
+
+  skill-evals:
+    name: skill-evals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run eval schema check
+        run: bash tests/evals/run-evals.sh
+
+  script-units-bats:
+    name: script-units (bats)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install bats
+        run: npm install -g bats
+      - name: Run bats
+        run: bats tests/scripts/*.bats
+
+  script-units-pester:
+    name: script-units (Pester)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Pester 5
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -MinimumVersion 5.0.0
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path 'tests/scripts/*.Tests.ps1' -PassThru
+          if ($r.FailedCount -gt 0) { exit 1 }
+
+  build-fpc:
+    name: build-fpc (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install FPC
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fpc
+          fpc -h | head -3
+      - name: Clone mORMot 2
+        run: |
+          git clone --depth 1 https://github.com/synopse/mORMot2.git "$HOME/mORMot2"
+          echo "MORMOT2_PATH=$HOME/mORMot2" >> $GITHUB_ENV
+      - name: Build greenfield-fpc smoke
+        run: bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-fpc --project src/smoke.lpr
+      - name: Build greenfield-fpc smoke.test
+        run: bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-fpc --project tests/smoke.test.lpr
+      - name: Run smoketest
+        run: ./tests/fixtures/greenfield-fpc/tests/smoketest
+      - name: Build greenfield-dual via FPC
+        run: bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-dual --project src/smoke.lpr
+
+  build-fpc-mac:
+    name: build-fpc (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install FPC
+        run: |
+          brew install fpc
+          fpc -h | head -3
+      - name: Clone mORMot 2
+        run: |
+          git clone --depth 1 https://github.com/synopse/mORMot2.git "$HOME/mORMot2"
+          echo "MORMOT2_PATH=$HOME/mORMot2" >> $GITHUB_ENV
+      - name: Build greenfield-fpc smoke
+        run: bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-fpc --project src/smoke.lpr
+      - name: Run smoketest (build-only on macOS for now)
+        run: |
+          if [ -x tests/fixtures/greenfield-fpc/src/smoke ]; then
+            ./tests/fixtures/greenfield-fpc/src/smoke
+          fi
+
+  build-delphi:
+    name: build-delphi (advisory)
+    runs-on: [self-hosted, windows, delphi]
+    if: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build greenfield-delphi smoke
+        shell: pwsh
+        run: |
+          $env:MORMOT2_PATH = "C:/mORMot2"
+          bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-delphi --project src/smoke.dpr
+      - name: Build greenfield-dual via Delphi
+        shell: pwsh
+        run: |
+          $env:MORMOT2_PATH = "C:/mORMot2"
+          bash scripts/ci-fixture-build.sh --fixture tests/fixtures/greenfield-dual --project src/smoke.dpr
+
+  e2e:
+    name: e2e (advisory)
+    runs-on: ubuntu-latest
+    needs: [invariants, skill-evals, script-units-bats, build-fpc]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Hook Pascal-detection smoke
+        run: |
+          mkdir -p /tmp/smoke-pascal && cd /tmp/smoke-pascal
+          echo 'program smoke; begin end.' > smoke.dpr
+          CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE" bash "$GITHUB_WORKSPACE/hooks/session-start" > /tmp/hook-out.json
+          node -e "
+            const j = JSON.parse(require('fs').readFileSync('/tmp/hook-out.json','utf8'));
+            const ctx = j.additional_context || (j.hookSpecificOutput && j.hookSpecificOutput.additionalContext) || j.additionalContext;
+            if (!ctx.includes('Pascal project detected')) { process.exit(1); }
+            process.stdout.write('hook detected pascal\n');
+          "
+      - name: Brownfield fixture has no nudge
+        run: |
+          cd tests/fixtures/brownfield-no-tests
+          tmp_mm=$(mktemp -d)
+          sed -i "s|REPLACE_WITH_MORMOT2_PATH|$tmp_mm|g" .claude/mormot2.config.json
+          CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE" bash "$GITHUB_WORKSPACE/hooks/session-start" > /tmp/hook-out.json
+          node -e "
+            const j = JSON.parse(require('fs').readFileSync('/tmp/hook-out.json','utf8'));
+            const ctx = j.additional_context || (j.hookSpecificOutput && j.hookSpecificOutput.additionalContext) || j.additionalContext || '';
+            if (ctx.includes('Pascal project detected but')) { process.exit(1); }
+            process.stdout.write('no nudge when config present\n');
+          "
+          sed -i "s|$tmp_mm|REPLACE_WITH_MORMOT2_PATH|g" .claude/mormot2.config.json
+          rm -rf "$tmp_mm"
