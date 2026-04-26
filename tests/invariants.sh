@@ -27,7 +27,7 @@ cd "$PLUGIN_ROOT"
 # Singletons are also exempt from the I4 "must have a test" rule since their
 # tests would have to live in the language-appropriate framework only; the
 # inherited maintenance scripts carry no Plan-1 test obligation.
-PLATFORM_SINGLETONS=("delphi-build" "fpc-build" "bump-version" "sync-to-codex-plugin")
+PLATFORM_SINGLETONS=("delphi-build" "fpc-build" "bump-version" "sync-to-codex-plugin" "ci-fixture-build")
 # Stems exempt from I4 (no test file required).
 TEST_EXEMPT=("bump-version" "sync-to-codex-plugin")
 
