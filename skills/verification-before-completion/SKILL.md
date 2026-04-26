@@ -137,3 +137,45 @@ From 24 failure memories:
 Run the command. Read the output. THEN claim the result.
 
 This is non-negotiable.
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+For mORMot 2 / Pascal projects, "verification before completion" means concrete, automatable evidence in this exact order:
+
+### 1. Compiler exit code 0
+
+Run `/delphi-build` (Delphi project) or `/fpc-build` (FPC/Lazarus project), or both if the project ships dual-target. The wrappers emit a single trailing line:
+
+```
+BUILD_RESULT exit=<n> errors=<count> warnings=<count> first=<file:line:msg>
+```
+
+Verification passes only if `exit=0` AND `errors=0`. Any non-zero `errors` is a failure even when the linker succeeds.
+
+### 2. Test suite green
+
+Run `/mormot2-test`. The runner exits 0 only when every `TSynTestCase` in the project's regression suite passes. The runner does not invoke DUnitX, FPCUnit, or TestInsight; if the project depends on those, this is a partial verification (call it out in the report).
+
+### 3. Symbols deployed
+
+Confirm the build artefact ships with debug symbols so a future `pascal-debugging-logging` session can resolve stack traces:
+
+- Delphi: `<Project>.map` next to the `.exe` (build with `-GD`).
+- FPC: DWARF embedded (`-gw3 -gl`) or `.dbg` sidecar.
+
+Missing symbols is a "verified compiles" not a "verified ships" - say so explicitly.
+
+### 4. Lint signal
+
+Skim BUILD_RESULT `warnings=<count>`. Treat any warning count > 0 as a follow-up task; do not silently accept new warnings introduced by your change.
+
+### Don't claim verification when
+
+- A `TSynTestCase` was added but not run.
+- The `.map` or DWARF symbols are missing from the build output.
+- Only one compiler was exercised when both `.dproj` and `.lpi` exist.
+- The build was a `Make` (incremental); a release `Build` (full) wasn't run.
