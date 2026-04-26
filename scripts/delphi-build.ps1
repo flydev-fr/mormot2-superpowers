@@ -28,16 +28,29 @@ function Emit-Result {
     "BUILD_RESULT exit=$ExitCode errors=$Errors warnings=$Warnings first=$First"
 }
 
-if ([string]::IsNullOrEmpty($env:MORMOT2_PATH)) {
-    [Console]::Error.WriteLine('MORMOT2_PATH is not set')
+# Fallback: when MORMOT2_PATH is unset, read it from .claude/mormot2.config.json.
+# Hook-exported env vars do not propagate to Claude Code child processes.
+$MormotPath = $env:MORMOT2_PATH
+if ([string]::IsNullOrEmpty($MormotPath) -and (Test-Path '.claude/mormot2.config.json' -PathType Leaf)) {
+    try {
+        $cfg = Get-Content '.claude/mormot2.config.json' -Raw | ConvertFrom-Json
+        if ($cfg.mormot2_path) { $MormotPath = $cfg.mormot2_path }
+    } catch {
+        # Malformed config; fall through to the unset-error below.
+    }
+}
+
+if ([string]::IsNullOrEmpty($MormotPath)) {
+    [Console]::Error.WriteLine('MORMOT2_PATH is not set and no .claude/mormot2.config.json found in cwd')
     Emit-Result -ExitCode 2 -First 'MORMOT2_PATH unset'
     exit 2
 }
-if (-not (Test-Path $env:MORMOT2_PATH -PathType Container)) {
-    [Console]::Error.WriteLine("MORMOT2_PATH=$env:MORMOT2_PATH not found")
+if (-not (Test-Path $MormotPath -PathType Container)) {
+    [Console]::Error.WriteLine("MORMOT2_PATH=$MormotPath not found")
     Emit-Result -ExitCode 2 -First "MORMOT2_PATH not found"
     exit 2
 }
+$env:MORMOT2_PATH = $MormotPath
 if (-not (Test-Path $Project -PathType Leaf)) {
     [Console]::Error.WriteLine("project file '$Project' does not exist")
     Emit-Result -ExitCode 5 -First "project missing: $Project"

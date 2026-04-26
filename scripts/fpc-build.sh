@@ -41,8 +41,19 @@ if [ -z "$PROJECT" ]; then
     exit 1
 fi
 
+# Fallback: when MORMOT2_PATH is unset, read it from .claude/mormot2.config.json.
+# Hook-exported env vars do not propagate to Claude Code child processes.
+if [ -z "${MORMOT2_PATH:-}" ] && [ -f .claude/mormot2.config.json ] && command -v node >/dev/null 2>&1; then
+    MORMOT2_PATH=$(node -e "
+        try {
+            const c = JSON.parse(require('fs').readFileSync('.claude/mormot2.config.json','utf8'));
+            if (c.mormot2_path) process.stdout.write(c.mormot2_path);
+        } catch (e) { process.exit(1); }
+    " 2>/dev/null) || true
+fi
+
 if [ -z "${MORMOT2_PATH:-}" ]; then
-    echo "error: MORMOT2_PATH is not set" >&2
+    echo "error: MORMOT2_PATH is not set and no .claude/mormot2.config.json found in cwd" >&2
     emit_result 2 0 0 "MORMOT2_PATH unset"
     exit 2
 fi

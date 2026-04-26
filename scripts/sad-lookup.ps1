@@ -35,8 +35,25 @@ if ($Limit -notmatch '^[1-9][0-9]*$') {
 $LimitInt = [int]$Limit
 
 $DocPath = $env:MORMOT2_DOC_PATH
+
+# Fallback: when MORMOT2_DOC_PATH is unset, read it from the local
+# .claude/mormot2.config.json. Hook-exported env vars do not propagate to
+# Claude Code child processes, so scripts must read the config themselves.
+if ([string]::IsNullOrEmpty($DocPath) -and (Test-Path '.claude/mormot2.config.json' -PathType Leaf)) {
+    try {
+        $cfg = Get-Content '.claude/mormot2.config.json' -Raw | ConvertFrom-Json
+        if ($cfg.mormot2_doc_path) {
+            $DocPath = $cfg.mormot2_doc_path
+        } elseif ($cfg.mormot2_path) {
+            $DocPath = Join-Path $cfg.mormot2_path 'docs'
+        }
+    } catch {
+        # Malformed config; fall through to the unset-error below.
+    }
+}
+
 if ([string]::IsNullOrEmpty($DocPath)) {
-    [Console]::Error.WriteLine('error: MORMOT2_DOC_PATH is not set; run /mormot2-init or set it manually')
+    [Console]::Error.WriteLine('error: MORMOT2_DOC_PATH is not set and no .claude/mormot2.config.json found in cwd; run /mormot2-init or set MORMOT2_DOC_PATH manually')
     exit 2
 }
 if (-not (Test-Path -LiteralPath $DocPath -PathType Container)) {

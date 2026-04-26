@@ -26,8 +26,23 @@ if ! [[ "$LIMIT" =~ ^[1-9][0-9]*$ ]]; then
     exit 1
 fi
 
+# Fallback: when MORMOT2_DOC_PATH is unset, read it from the local
+# .claude/mormot2.config.json. Hook-exported env vars do not propagate to
+# Claude Code child processes, so scripts must read the config themselves.
 if [ -z "${MORMOT2_DOC_PATH:-}" ]; then
-    echo "error: MORMOT2_DOC_PATH is not set; run /mormot2-init or set it manually" >&2
+    if [ -f .claude/mormot2.config.json ] && command -v node >/dev/null 2>&1; then
+        MORMOT2_DOC_PATH=$(node -e "
+            try {
+                const c = JSON.parse(require('fs').readFileSync('.claude/mormot2.config.json','utf8'));
+                const p = c.mormot2_doc_path || (c.mormot2_path ? c.mormot2_path + '/docs' : '');
+                if (p) process.stdout.write(p);
+            } catch (e) { process.exit(1); }
+        " 2>/dev/null) || true
+    fi
+fi
+
+if [ -z "${MORMOT2_DOC_PATH:-}" ]; then
+    echo "error: MORMOT2_DOC_PATH is not set and no .claude/mormot2.config.json found in cwd; run /mormot2-init or set MORMOT2_DOC_PATH manually" >&2
     exit 2
 fi
 
