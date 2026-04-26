@@ -198,3 +198,41 @@ git worktree remove <worktree-path>
 
 **Pairs with:**
 - **using-git-worktrees** - Cleans up worktree created by that skill
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+Before any merge / PR / cleanup decision, run the dual verification gate:
+
+### 1. Both compilers, when applicable
+
+If both `.dproj` and `.lpi` exist in the project tree, build both:
+
+```bash
+/delphi-build
+/fpc-build
+```
+
+Either's failure blocks the finish. Pin to one compiler in `.claude/mormot2.config.json` only if the project explicitly drops the other target.
+
+### 2. TSynTestCase suite
+
+Run `/mormot2-test`. Exit 0 required. Do not finalise the branch on a yellow test run.
+
+### 3. mORMot 2 regression suite (if you touched mORMot 2 itself)
+
+If your branch modifies the mORMot 2 source tree (rare; only happens when working in `$MORMOT2_PATH`), run mORMot 2's own regression suite. Otherwise skip.
+
+### 4. Cleanup
+
+After merge or discard, remove the worktree's `.dcu`/`.ppu` build artefacts. Do NOT delete `$MORMOT2_PATH` - it is shared.
+
+### Decision matrix
+
+- All gates green + change is bug fix: merge to `main`.
+- All gates green + change is feature: open PR (or merge to `main` if solo).
+- Test suite red: keep branch, do not merge, document the blocker in the branch description.
+- Build red on one compiler only: pin compiler in config OR fix the broken target before merging.
