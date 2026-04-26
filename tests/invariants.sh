@@ -242,6 +242,20 @@ else
     report "I15 agents/code-reviewer.md missing Pascal checklist"
 fi
 
+# I16: every tests/fixtures/<name>/ directory ships a .claude/mormot2.config.json sample.
+violations_16=0
+if [ -d tests/fixtures ]; then
+    for fx in tests/fixtures/*/; do
+        [ -d "$fx" ] || continue
+        cfg="${fx}.claude/mormot2.config.json"
+        if [ ! -f "$cfg" ]; then
+            report "I16 fixture $(basename "$fx") missing $cfg"
+            violations_16=$((violations_16+1))
+        fi
+    done
+fi
+[ $violations_16 -eq 0 ] && ok "I16 fixtures ship config samples"
+
 echo
 if [ $fails -eq 0 ]; then
     echo "ALL INVARIANTS PASS"
