@@ -369,3 +369,43 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission.
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+mORMot 2 native test framework: `TSynTestCase` (`mormot.core.test.pas`). This is the only framework supported by the `/mormot2-test` command. Existing DUnitX/FPCUnit/TestInsight rigs are not run by `/mormot2-test`; if you find one, see `mormot2-rest-soa` and `pascal-debugging-logging` for migration guidance.
+
+### RED (failing test)
+
+Write a `TSynTestCase` descendant whose only method asserts the not-yet-implemented behaviour:
+
+```pascal
+type
+  TTestDiscount = class(TSynTestCase)
+  published
+    procedure ApplyDiscount;
+  end;
+
+procedure TTestDiscount.ApplyDiscount;
+begin
+  Check(CalcDiscount(100, 0.1) = 90, 'discount of 10% on 100 should yield 90');
+end;
+```
+
+Run via the test runner unit (a `program ... Test.RunFromConsole` shape, or `/mormot2-test`). Expect FAIL with "function CalcDiscount not declared" or "Check failed".
+
+### GREEN (minimal implementation)
+
+Write the simplest implementation that satisfies the assertion. Resist eager generalisation. The test fails until the assertion is met; then it passes.
+
+### REFACTOR
+
+Use `RawUtf8` (not `string`) for transport-bound test data (cross-link `mormot2-core`). Use `CheckEqual`, `CheckSame`, `CheckHash` from `TSynTestCase` for typed assertions. Use `TestFailed` to bail out before the next assertion when a precondition is violated.
+
+### Iron law (mORMot variant)
+
+NO PRODUCTION PASCAL CODE WITHOUT A FAILING TSYNTESTCASE FIRST.
+If you wrote the unit before its test, delete the unit. Start over from the test.
