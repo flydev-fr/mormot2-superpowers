@@ -216,3 +216,23 @@ Ready to implement auth feature
 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+Worktrees inherit `MORMOT2_PATH` and `MORMOT2_DOC_PATH` from the parent shell - they are not per-worktree config. Confirm by running `echo "$MORMOT2_PATH"` in the new worktree before starting work.
+
+### Don't clone mORMot 2 per worktree
+
+The mORMot 2 framework is a read-only shared library. Do NOT add it as a submodule, do NOT copy it under each worktree. Build scripts always reference it via `$MORMOT2_PATH`. Multiple worktrees compiling against the same `$MORMOT2_PATH` simultaneously is safe (mORMot 2 source is read-only during builds).
+
+### Per-worktree config
+
+If your worktree needs a different `mormot2_path` (e.g. testing a fork of mORMot 2), drop a worktree-local `.claude/mormot2.config.json` overriding `mormot2_path`. The session-start hook re-reads config on each session, so the override applies cleanly.
+
+### Worktree cleanup
+
+Building generates `.dcu` (Delphi) and `.ppu` (FPC) artefacts under `$DCC_DcuOutput` / `$FPC_FE` (project-specific). Add these to `.gitignore` once per worktree if not already covered. The `finishing-a-development-branch` skill cleans these along with the worktree.
