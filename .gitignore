@@ -1,6 +1,9 @@
 .worktrees/
 .private-journal/
 .claude/
+# fixture-local .claude/ configs are part of the test corpus and must be tracked
+!tests/fixtures/*/.claude/
+!tests/fixtures/*/.claude/**
 .DS_Store
 node_modules/
 inspo
