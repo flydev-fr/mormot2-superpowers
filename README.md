@@ -1,10 +1,58 @@
 # mormot2-superpowers
 
-A Claude Code plugin for the [Synopse mORMot 2](https://github.com/synopse/mORMot2) community.
+A plugin for [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) built on the [Superpowers framework](https://github.com/obra/superpowers) to serve the [Synopse mORMot 2](https://github.com/synopse/mORMot2) community.
 
-mORMot 2 is a deep, opinionated framework: ORM, REST, SOA, async HTTP, WebSockets, JWT/ECC/AES, MongoDB, eight SQL providers, MVC, DDD, a full crypto suite, and 26 chapters of architecture docs (the SAD). It is also Pascal, which means your AI agent probably wants to write you `string` fields on `TOrm` classes, generate `WriteLn` "logging" instead of `TSynLog`, forget `RawUtf8` boundaries, and invent classes that do not exist.
+## What is this and why do I need it?
 
-This plugin teaches the agent how to actually use mORMot 2.
+**Claude Code** is an AI assistant that runs in your terminal, understands your codebase, and can write, edit, and test code autonomously.
+
+**Superpowers** is a [plugin framework for Claude Code](https://claude.com/plugins/superpowers). It allows developers to inject strict workflows, specialized tools, and deep domain knowledge directly into the AI's context so it stops acting like a junior generalist and starts acting like a senior specialist. Superpowers enforces strict TDD cycles, creates isolated git worktrees for safe development, generates detailed implementation plans, dispatches parallel subagents, performs technical code reviews, investigates root causes systematically, and verifies tests/builds before commits or PRs.
+
+Out of the box, when an AI tries to write Pascal for mORMot 2, it falls back to generic habits: it writes `string` fields on `TOrm` classes, generates `WriteLn` "logging" instead of using `TSynLog`, forgets `RawUtf8` boundaries, and invents classes that don't exist. It also doesn't know how to run `fpc` or `dcc32` with your project's specific search paths.
+
+**mormot2-superpowers** bridges this gap. It is a set of carefully crafted rules, documentation bridges, and build scripts that teaches Claude Code how to *actually* use mORMot 2 idiomatically.
+
+## The Plugin in Action (Input / Output Examples)
+
+Here are a few examples showing how the plugin changes Claude's behavior from generic to mORMot 2 specific:
+
+### Example 1: Generating a Model
+
+**Prompt:** *"Add a User ORM class with email and role fields."*
+
+**Without the plugin (Generic AI):**
+Generates standard Delphi classes using `string`, perhaps guessing at SQL mappings or using generic data access patterns. It will likely use deprecated `TSQLRecord` (from mORMot v1) instead of `TOrm` (mORMot 2). It will also default to using `WriteLn` instead of `ConsoleWrite`, `ReadLn` instead of `ConsoleWaitForEnterKey`, and will struggle with correct `RawUtf8` casting.
+
+**With mormot2-superpowers:**
+The AI automatically loads the `mormot2-orm` skill and generates idiomatic code:
+```pascal
+type
+  TOrmUser = class(TOrm)
+    fEmail: RawUtf8;
+    fRole: RawUtf8;
+  published
+    property Email: RawUtf8 index 80 read fEmail write fEmail stored AS_UNIQUE;
+    property Role: RawUtf8 read fRole write fRole;
+  end;
+```
+It knows to use `RawUtf8`, `TOrm`, and `stored AS_UNIQUE`.
+
+### Example 2: Querying the Documentation
+
+**Command:** `/mormot2-doc rest`
+
+**Action:**
+Instead of hallucinating APIs, the agent retrieves the actual, local SAD (Software Architecture Document) chapter concerning REST and SOA. It injects the excerpt into its context, allowing it to correctly implement an `IInvokable` interface service exactly as the mORMot 2 framework dictates.
+
+### Example 3: Building and Testing
+
+**Command:** `/fpc-build` or `/mormot2-test`
+
+**Action:**
+Claude Code normally doesn't know where your framework files are located or how to invoke your compiler. With the plugin, it invokes `fpc`, `lazbuild`, or `dcc32` with all the correct mORMot 2 search paths injected automatically (e.g., `-Fi../mORMot2/src -Fu../mORMot2/src/core`). 
+It then parses the structured build output (`BUILD_RESULT exit=0 errors=0 warnings=0`) and can autonomously fix compilation errors or test failures using `TSynTestCase`.
+
+---
 
 ## What it does
 
@@ -12,7 +60,7 @@ This plugin teaches the agent how to actually use mORMot 2.
 - **Knows your SAD docs.** `/mormot2-doc <topic>` resolves topic names ("torm", "rest", "soa", "ecc", "ddd", "logging", ...) or chapter numbers to local SAD chapter excerpts. No more "I think this is in chapter 16 somewhere".
 - **Builds with the right flags.** `/delphi-build <project>` and `/fpc-build <project>` invoke `dcc32`/`dcc64`/`msbuild` or `fpc`/`lazbuild` with mORMot 2 search paths injected automatically. Both emit a structured `BUILD_RESULT exit=N errors=N warnings=N first=...` line so the agent can act on failures without parsing colorized terminal output.
 - **Reviews like a mORMot 2 reviewer would.** The Pascal-aware `code-reviewer` agent checks RawUtf8 boundaries, interface refcounts, try-finally completeness, ORM access patterns, threading on `TSqlDBConnection`, and whether your build artefact ships `.map` or DWARF symbols.
-- **Tests via TSynTestCase, period.** `/mormot2-test` runs `mormot.core.test.TSynTestCase` suites. DUnitX, FPCUnit, and TestInsight are intentionally not supported. If you are coming from one of those, the plugin will say so.
+- **Tests via TSynTestCase, period.** `/mormot2-test` runs `mormot.core.test.TSynTestCase` suites. DUnitX, FPCUnit, and TestInsight are intentionally not supported.
 
 ## Quick start
 
@@ -121,7 +169,7 @@ The session-start hook reads this file on every session and exports `MORMOT2_PAT
 
 ## Status
 
-`1.0.0-rc.1`. Feature-complete against the design. 16 structural invariants, 25 bats tests, 21 Pester tests, 59 skill-trigger evals all green.
+`1.0.0-rc.2`. Feature-complete against the design. 16 structural invariants, 25 bats tests, 21 Pester tests, 59 skill-trigger evals all green.
 
 Known limitations:
 - `/mormot2-init --scaffold` is a stub (writes config, does not yet generate a project skeleton). Coming in a later release.
