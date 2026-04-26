@@ -150,3 +150,41 @@ After saving the plan, offer execution choice:
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
 - Batch execution with checkpoints for review
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+When writing a plan that will be executed against a Pascal/mORMot 2 codebase, each task must include:
+
+### File paths in Pascal terms
+
+- Unit files: `src/myapp/orm/myapp.orm.user.pas` (snake `.` separators inside the unit name; matches mORMot 2's own `mormot.X.Y.Z.pas` convention).
+- Project files: `src/myapp/myapp.dpr` (Delphi) and/or `src/myapp/myapp.lpi` (Lazarus).
+- Include files: `*.inc` always co-located with the unit that includes them.
+
+### Unit dependency check
+
+Before adding a `uses` clause to a unit, verify the dependency direction does not break the layered hierarchy (cross-link `mormot2-core`'s `references/unit-hierarchy.md`). Plans that introduce `mormot.core.json` ahead of `mormot.core.rtti` are wrong - the plan reviewer should catch this before execution.
+
+### `mormot.defines.inc` toggles
+
+If your plan toggles a build-time define (`PUREMORMOT2`, `FPC_X64MM`, `NEWRTTINOTUSED`, `NOPATCHVMT`, `NOPATCHRTL`), call it out as a dedicated task with the exact `.inc`/`.dproj`/`.lpi` file change, plus a verification step that re-runs `/delphi-build` or `/fpc-build` to confirm the toggle compiles cleanly.
+
+### TSynTestCase RED step
+
+Every implementation task must have a preceding TDD RED task. Plan template:
+
+```markdown
+- [ ] Step 1: Write failing TSynTestCase
+- [ ] Step 2: Run test runner, confirm RED
+- [ ] Step 3: Write minimal Pascal implementation
+- [ ] Step 4: Run test runner, confirm GREEN
+- [ ] Step 5: Commit
+```
+
+### Cross-references in plan body
+
+Cite SAD chapters via `$MORMOT2_DOC_PATH/mORMot2-SAD-Chapter-NN.md` rather than copying SAD prose into the plan. Cite domain skills by name (`mormot2-orm`, `mormot2-net`, etc.) when a task naturally lives within their scope.
