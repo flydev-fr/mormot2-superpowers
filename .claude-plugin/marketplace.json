@@ -9,7 +9,7 @@
     {
       "name": "mormot2-superpowers",
       "description": "Pascal/Delphi+FPC variant of Superpowers, specialized for the Synopse mORMot 2 framework.",
-      "version": "1.0.0-rc.1",
+      "version": "1.0.0-rc.2",
       "source": "./"
     }
   ]

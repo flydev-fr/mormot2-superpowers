@@ -1,6 +1,6 @@
 {
   "name": "mormot2-superpowers",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Pascal/Delphi+FPC variant of Superpowers, specialized for the Synopse mORMot 2 framework: ORM, REST, SOA, networking, deployment, auth, TSynTestCase TDD.",
   "license": "MIT",
   "fork": {
