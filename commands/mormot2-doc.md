@@ -12,7 +12,7 @@ Look up a topic or chapter number in the mORMot 2 Software Architecture Design (
 
 ## What you do
 
-1. Run `bash scripts/sad-lookup.sh <args>` (or `pwsh -File scripts/sad-lookup.ps1 <args>` on Windows).
+1. Run `bash "$CLAUDE_PLUGIN_ROOT/scripts/sad-lookup.sh" <args>` (or `pwsh -File "$CLAUDE_PLUGIN_ROOT/scripts/sad-lookup.ps1" <args>` on Windows). The plugin root is exported as `CLAUDE_PLUGIN_ROOT` by Claude Code; do NOT use a relative path like `scripts/sad-lookup.sh` because the slash command runs from the user's project cwd, not the plugin root.
 2. The script resolves topic via the chapter index, validates the file exists at `$MORMOT2_DOC_PATH/mORMot2-SAD-Chapter-NN.md`, and emits `Chapter NN - <path>` followed by the excerpt.
 3. Quote the excerpt verbatim back to the user.
 

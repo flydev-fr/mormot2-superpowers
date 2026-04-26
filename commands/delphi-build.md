@@ -2,7 +2,7 @@
 description: "Build a Delphi project (.dpr or .dproj) with mORMot 2 search paths injected."
 ---
 
-Invoke `scripts/delphi-build.ps1` with the user's project file. The script:
+Invoke the plugin's `scripts/delphi-build.ps1` (resolve via `$CLAUDE_PLUGIN_ROOT`, not via a cwd-relative path) with the user's project file. The script:
 - Resolves `MORMOT2_PATH` from `.claude/mormot2.config.json`.
 - Picks dcc32/dcc64/msbuild based on file extension (`.dproj` -> msbuild; `.dpr` -> dcc64).
 - Emits a structured `BUILD_RESULT exit=<n> errors=<count> warnings=<count> first=<file:line:msg>` line.
@@ -16,7 +16,7 @@ Invoke `scripts/delphi-build.ps1` with the user's project file. The script:
 ## What you do
 
 1. Resolve the project file (argument or autodiscover).
-2. Run `pwsh -File scripts/delphi-build.ps1 -Project <project> [-Compiler <comp>]`.
+2. Run `pwsh -File "$CLAUDE_PLUGIN_ROOT/scripts/delphi-build.ps1" -Project <project> [-Compiler <comp>]`.
 3. Read the trailing `BUILD_RESULT` line.
 4. If `exit != 0` or `errors > 0`, surface the `first` field and the BUILD_RESULT verbatim.
 5. If `exit = 0`, report success with the warnings count.

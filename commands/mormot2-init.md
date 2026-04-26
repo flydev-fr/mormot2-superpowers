@@ -2,9 +2,11 @@
 description: "Scaffold .claude/mormot2.config.json for a Pascal/mORMot 2 project."
 ---
 
-Run the mormot2-init scaffolder. Defaults: read `--mormot2-path` from arguments, infer `--mormot2-doc-path` as `<mormot2-path>/docs`, set `compiler: auto`.
+Run the mormot2-init scaffolder from the plugin root. Defaults: read `--mormot2-path` from arguments, infer `--mormot2-doc-path` as `<mormot2-path>/docs`, set `compiler: auto`. The scaffolder writes `.claude/mormot2.config.json` into the user's CURRENT working directory (not the plugin root).
 
-If running on Windows, prefer `scripts/mormot2-init.ps1`. On Linux/macOS or under Git Bash, use `scripts/mormot2-init.sh`.
+The script lives inside the plugin; resolve it via `$CLAUDE_PLUGIN_ROOT`, not a cwd-relative path:
+- On Windows: `pwsh -File "$CLAUDE_PLUGIN_ROOT/scripts/mormot2-init.ps1" <args>`
+- On Linux/macOS or under Git Bash: `bash "$CLAUDE_PLUGIN_ROOT/scripts/mormot2-init.sh" <args>`
 
 ## Argument forms
 
