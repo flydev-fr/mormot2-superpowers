@@ -1,6 +1,6 @@
 {
   "name": "mormot2-superpowers",
-  "version": "0.1.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
   "description": "Pascal/Delphi+FPC variant of the Superpowers plugin, specialized for the Synopse mORMot 2 framework.",

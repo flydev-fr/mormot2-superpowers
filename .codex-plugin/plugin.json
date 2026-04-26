@@ -1,31 +1,31 @@
 {
-  "name": "superpowers",
-  "version": "5.0.7",
-  "description": "An agentic skills framework & software development methodology that works: planning, TDD, debugging, and collaboration workflows.",
-  "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com",
-    "url": "https://github.com/obra"
-  },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "name": "mormot2-superpowers",
+  "version": "1.0.0-rc.1",
+  "description": "Pascal/Delphi+FPC variant of Superpowers, specialized for the Synopse mORMot 2 framework: ORM, REST, SOA, networking, deployment, auth, TSynTestCase TDD.",
   "license": "MIT",
+  "fork": {
+    "of": "obra/superpowers",
+    "from_version": "5.0.7"
+  },
   "keywords": [
-    "brainstorming",
-    "subagent-driven-development",
+    "pascal",
+    "delphi",
+    "fpc",
+    "lazarus",
+    "mormot",
+    "mormot2",
+    "synopse",
+    "orm",
+    "rest",
+    "soa",
     "skills",
-    "planning",
-    "tdd",
-    "debugging",
-    "code-review",
-    "workflow"
+    "tdd"
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Superpowers",
-    "shortDescription": "Planning, TDD, debugging, and delivery workflows for coding agents",
-    "longDescription": "Use Superpowers to guide agent work through brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows.",
-    "developerName": "Jesse Vincent",
+    "displayName": "mORMot 2 Superpowers",
+    "shortDescription": "Pascal/Delphi+FPC + mORMot 2 development methodology and skills.",
+    "longDescription": "Pascal/Delphi+FPC variant of the Superpowers methodology, specialized for the Synopse mORMot 2 framework. Covers TOrm/TOrmModel, REST/SOA, async networking, database providers, deployment topologies, JWT/ECC/AES crypto, and TSynTestCase test-driven development. Cross-platform (Delphi + FPC + Lazarus).",
     "category": "Coding",
     "capabilities": [
       "Interactive",
@@ -33,12 +33,8 @@
       "Write"
     ],
     "defaultPrompt": [
-      "I've got an idea for something I'd like to build.",
-      "Let's add a feature to this project."
-    ],
-    "brandColor": "#F59E0B",
-    "composerIcon": "./assets/superpowers-small.svg",
-    "logo": "./assets/app-icon.png",
-    "screenshots": []
+      "I want to build a mORMot 2 REST service.",
+      "Add a TOrm class for users with email and role fields."
+    ]
   }
 }

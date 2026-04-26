@@ -1,20 +1,12 @@
 {
-  "name": "superpowers-dev",
-  "description": "Development marketplace for Superpowers core skills library",
-  "owner": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
-  },
+  "name": "mormot2-superpowers-dev",
+  "description": "Development marketplace for the mormot2-superpowers plugin (Pascal/Delphi+FPC + Synopse mORMot 2 methodology fork of obra/superpowers).",
   "plugins": [
     {
-      "name": "superpowers",
-      "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
-      "version": "5.0.7",
-      "source": "./",
-      "author": {
-        "name": "Jesse Vincent",
-        "email": "jesse@fsck.com"
-      }
+      "name": "mormot2-superpowers",
+      "description": "Pascal/Delphi+FPC variant of Superpowers, specialized for the Synopse mORMot 2 framework.",
+      "version": "1.0.0-rc.1",
+      "source": "./"
     }
   ]
 }

@@ -1,22 +1,26 @@
 {
-  "name": "superpowers",
-  "displayName": "Superpowers",
-  "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "5.0.7",
-  "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
-  },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "name": "mormot2-superpowers",
+  "displayName": "mORMot 2 Superpowers",
+  "description": "Pascal/Delphi+FPC variant of Superpowers, specialized for the Synopse mORMot 2 framework: ORM, REST, SOA, networking, deployment, auth, TSynTestCase TDD.",
+  "version": "1.0.0-rc.1",
   "license": "MIT",
+  "fork": {
+    "of": "obra/superpowers",
+    "from_version": "5.0.7"
+  },
   "keywords": [
+    "pascal",
+    "delphi",
+    "fpc",
+    "lazarus",
+    "mormot",
+    "mormot2",
+    "synopse",
+    "orm",
+    "rest",
+    "soa",
     "skills",
-    "tdd",
-    "debugging",
-    "collaboration",
-    "best-practices",
-    "workflows"
+    "tdd"
   ],
   "skills": "./skills/",
   "agents": "./agents/",
