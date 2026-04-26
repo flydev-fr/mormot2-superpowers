@@ -294,3 +294,40 @@ From debugging sessions:
 - Random fixes approach: 2-3 hours of thrashing
 - First-time fix rate: 95% vs 40%
 - New bugs introduced: Near zero vs common
+
+## Pascal / mORMot2 Addendum
+
+> **When this section applies:** the session is operating on a Pascal project (the
+> `PASCAL_PROJECT=1` env was exported by the mormot2-superpowers session-start hook).
+> If `PASCAL_PROJECT` is unset, ignore this section.
+
+The 4-phase root-cause method applies as-is. Pascal-specific signals to use during Phase 1 (reproduce + observe):
+
+### TSynLog as a structured observation log
+
+`TSynLog` writes one entry per significant event with millisecond timestamps and (when configured) a stack trace per error. To enable on a target session, before reproducing the bug:
+
+```pascal
+with TSynLog.Family do begin
+  Level := LOG_VERBOSE;        // sllInfo + sllDebug + sllTrace + sllError + ...
+  PerThreadLog := ptIdentifiedInOneFile;
+  HighResolutionTimestamp := true;
+  AutoFlushTimeOut := 5;
+end;
+```
+
+Logs land under the project's working directory, named after the executable. Read them before forming a hypothesis. Don't speculate without the log line that triggered the bug.
+
+### FastMM4 leak reports (Delphi)
+
+When a unit-test or shutdown reports a leak, the FastMM4 report identifies the allocation site by call stack. Match the stack against `.map`/DWARF (cross-link `pascal-debugging-logging`) to land on the source line. Common false positives: dynamic packages, RTL caches kept across processes.
+
+### EAccessViolation, EAssertionFailed
+
+Always read the address. If the project ships with `.map` (Delphi `-GD`) or DWARF symbols (FPC `-gw3 -gl`), `TSynLog` resolves the address to a source line in the log. Without symbols, use `addr2line` (FPC) or the `.map`+`mORMot2-MapDownload` flow (Delphi) before guessing.
+
+### Pitfalls
+
+- "It only happens in Release builds" usually means uninitialized stack (build with `-Or` on FPC to catch it) or RTL patches disabled (`NOPATCHRTL` set unintentionally).
+- "It only happens with the SQLite static lib" - see `mormot2-deploy` for static-lib link flags.
+- Never debug threading bugs without `PerThreadLog := ptIdentifiedInOneFile`.
