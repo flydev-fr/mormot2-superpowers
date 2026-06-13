@@ -71,10 +71,37 @@ $ExeName = switch ($ResolvedCompiler) {
 }
 
 $Found = Get-Command $ExeName -ErrorAction SilentlyContinue
+
+# Fallback: auto-detect MSBuild in common Visual Studio paths if not found on PATH
+if ($ResolvedCompiler -eq 'msbuild' -and -not $Found) {
+    $vsPaths = @(
+        "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files (x86)\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe"
+    )
+    foreach ($vp in $vsPaths) {
+        $resolved = Resolve-Path $vp -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($resolved) {
+            $Found = [PSCustomObject]@{ Path = $resolved.Path }
+            break
+        }
+    }
+    if (-not $Found -and (Test-Path "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe")) {
+        $Found = [PSCustomObject]@{ Path = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe" }
+    }
+}
+
 if (-not $Found) {
     [Console]::Error.WriteLine("$ExeName not found on PATH")
     Emit-Result -ExitCode 6 -First "$ExeName missing from PATH"
     exit 6
+}
+
+# Auto-detect BDS (Delphi) path from PATH if not set
+if ([string]::IsNullOrEmpty($env:BDS)) {
+    $binDir = $env:PATH -split ';' | Where-Object { $_ -like '*Embarcadero\Studio\*\bin' } | Select-Object -First 1
+    if ($binDir -and (Test-Path $binDir)) {
+        $env:BDS = Split-Path $binDir -Parent
+    }
 }
 
 # Build search-path arguments for dcc compilers
